@@ -22,4 +22,4 @@ libjson-xs-perl
 libdigest-sha1-perl
 libwww-perl 
 
-Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS. Dans le répertoire package, vous trouverez une version adaptée dans packages (à installer avec la commande dpkg -i libdigest-sha1-perl.deb)
+Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS. Dans le répertoire package, vous trouverez une version adaptée à Ubuntu 12.04 (à installer avec la commande dpkg -i libdigest-sha1-perl.deb)
