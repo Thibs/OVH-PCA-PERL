@@ -23,17 +23,19 @@ my $api_base_url='https://api.ovh.com/1.0/cloud';
 sub usage();
 sub deletesession($);
 sub rename_last_session($);
+sub listsessions ($);
 
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
 my %opt=();
-getopts("d:r:h",\%opt) or usage();
+getopts("d:r:lh",\%opt) or usage();
 usage() if $opt{h};
 my $pca_session_max_age = $opt{d};
 my $pca_session_newname = $opt{r};
+my $pca_sessions_list = $opt{l};
 
-if ((defined($pca_session_max_age))||(defined($pca_session_newname))) {
+if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))) {
 	if (defined($pca_session_max_age)) {
 		if ($pca_session_max_age !~ /\d+/ ) {
 			$pca_session_max_age='86400'; # Exprimed in seconds ; 1 day is 86400 seconds
@@ -42,6 +44,9 @@ if ((defined($pca_session_max_age))||(defined($pca_session_newname))) {
 	}
 	if (defined($pca_session_newname)) {
 		rename_last_session($pca_session_newname);
+	}
+	if (defined($pca_sessions_list)) {
+		&listsessions();
 	}
 }
 else {
@@ -60,14 +65,16 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name
+  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l]
 
    -h : this (help) message
    -d : delete PCA session older than X
    -r : Rename last PCA session into Y
+   -l : List PCA sessions
 
   example: perl $0 -d 86400 (=delete session older than a day)
            perl $0 -r session_name (=rename last session into session_name)
+           perl $0 -l
 
 EOF
   exit;
@@ -116,6 +123,28 @@ sub deletesession ($) {
 		}
 	}
 }
+
+sub listsessions ($) {
+	$pca_session_max_age=$_[0];
+	my $ua = LWP::UserAgent->new;
+	my $timestamp = time;
+	$ua->agent("Thibs-OVH-API/0.1 ");
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			my $pca_sessions=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions"));
+			foreach my $pca_session( @$pca_sessions ) {
+				my $pca_session_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session"));
+				my $session_end_date=$pca_session_properties->{'endDate'};
+				my $session_name=$pca_session_properties->{'name'};
+				my $sesssion_size=$pca_session_properties->{'size'};
+				print "Session $pca_session named $session_name ended on $session_end_date has a size of $sesssion_size\n";
+			}
+		}
+	}
+}
+
 
 sub CallOVHapi($$$$;$) {
 	my $as=$_[0];
