@@ -2,7 +2,7 @@
 #use strict;
 use LWP;
 
-$myAppKey = "qNFLisqa658Jwh5V";
+$myAppKey = "XXXXXXXXXXXXXXXXXXX";
 my $browser = LWP::UserAgent->new;
 my $url = 'https://api.ovh.com/1.0/auth/credential';
 
