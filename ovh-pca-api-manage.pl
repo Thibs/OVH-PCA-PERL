@@ -66,8 +66,8 @@ sub usage()
    -d : delete PCA session older than X
    -r : Rename last PCA session into Y
 
-  example: $0 -d 86400 (=delete session older than a day)
-           $0 -r session_name (=rename last session into session_name
+  example: perl $0 -d 86400 (=delete session older than a day)
+           perl $0 -r session_name (=rename last session into session_name)
 
 EOF
   exit;
@@ -86,7 +86,7 @@ sub rename_last_session($) {
 		foreach my $pca_service( @$available_pca_services ) {
 			my $pca_sessions=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions"));
 			my $last_session= pop(@$pca_sessions);
-			my $body='{"name":"$pca_session_newname"}';
+			my $body="{\"name\":\"$pca_session_newname\"}";
 			CallOVHapi($as,$ck,'PUT',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$last_session",$body);
 			print "Session $last_session has been renamed into $pca_session_newname";
 		}
