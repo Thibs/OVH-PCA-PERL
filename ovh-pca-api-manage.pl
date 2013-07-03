@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# Written by Thibault Richard. http://hostingg.thibs.com
+# Written by Thibault Richard. http://hosting.thibs.com
 # The following code is released under the terms of either the GNU
 # General Public License or the Artistic License
 # http://www.opensource.org/licenses/artistic-license-2.0.php
