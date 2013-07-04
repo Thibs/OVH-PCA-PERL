@@ -24,18 +24,20 @@ sub usage();
 sub deletesession($);
 sub rename_last_session($);
 sub listsessions ($);
+sub tasksproperties ($);
 
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
 my %opt=();
-getopts("d:r:lh",\%opt) or usage();
+getopts("d:r:lth",\%opt) or usage();
 usage() if $opt{h};
 my $pca_session_max_age = $opt{d};
 my $pca_session_newname = $opt{r};
 my $pca_sessions_list = $opt{l};
+my $pca_tasks_list = $opt{t};
 
-if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))) {
+if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))) {
 	if (defined($pca_session_max_age)) {
 		if ($pca_session_max_age !~ /\d+/ ) {
 			$pca_session_max_age='86400'; # Exprimed in seconds ; 1 day is 86400 seconds
@@ -47,6 +49,9 @@ if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($
 	}
 	if (defined($pca_sessions_list)) {
 		&listsessions();
+	}
+	if (defined($pca_tasks_list)) {
+		&tasksproperties();
 	}
 }
 else {
@@ -68,13 +73,15 @@ sub usage()
   usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l]
 
    -h : this (help) message
-   -d : delete PCA session older than X
+   -d : delete PCA sessions older than X
    -r : Rename last PCA session into Y
    -l : List PCA sessions
+   -t : List tasks with their status
 
-  example: perl $0 -d 86400 (=delete session older than a day)
-           perl $0 -r session_name (=rename last session into session_name)
-           perl $0 -l
+  example:  perl $0 -d 86400 (=delete sessions older than a day)
+            perl $0 -r "new session name" (=rename last session into new session name)
+            perl $0 -l (=List active sessions)
+            perl $0 -t (=List tasks and get their status)
 
 EOF
   exit;
@@ -95,16 +102,13 @@ sub rename_last_session($) {
 			my $last_session= pop(@$pca_sessions);
 			my $body="{\"name\":\"$pca_session_newname\"}";
 			CallOVHapi($as,$ck,'PUT',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$last_session",$body);
-			print "Session $last_session has been renamed into $pca_session_newname";
+			print "Session $last_session has been renamed into $pca_session_newname\n";
 		}
 	}
 }
 
 sub deletesession ($) {
-	$pca_session_max_age=$_[0];
-	my $ua = LWP::UserAgent->new;
 	my $timestamp = time;
-	$ua->agent("Thibs-OVH-API/0.1 ");
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
@@ -125,10 +129,6 @@ sub deletesession ($) {
 }
 
 sub listsessions ($) {
-	$pca_session_max_age=$_[0];
-	my $ua = LWP::UserAgent->new;
-	my $timestamp = time;
-	$ua->agent("Thibs-OVH-API/0.1 ");
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
@@ -145,6 +145,22 @@ sub listsessions ($) {
 	}
 }
 
+sub tasksproperties ($) {
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			my $pca_tasks=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/tasks"));
+			foreach my $pca_task_id( @$pca_tasks ) {
+				my $pca_task_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/tasks/$pca_task_id"));
+				my $pca_task_function=$pca_task_properties->{'function'};
+				my $pca_task_status=$pca_task_properties->{'status'};
+				my $pca_task_tododate=$pca_task_properties->{'todoDate'};
+				print "Task with ID $pca_task_id requesting task $pca_task_function is in status $pca_task_status (should be executed at $pca_task_tododate) \n";
+			}
+		}
+	}
+}
 
 sub CallOVHapi($$$$;$) {
 	my $as=$_[0];
