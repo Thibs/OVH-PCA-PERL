@@ -13,7 +13,6 @@ Pour que ce script soit fonctionnel il faut :
 
 5° Mettre ce token dans le script dans $ck
 
-6° Définir dans le script la valeur $pca_session_max_age pour dire au bout de combien de secondes d'existence les fichiers de la session doivent être effacés
 
 Si vous utilisez Debian, il vous faudra les packages suivants :
 
