@@ -19,7 +19,7 @@ my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
 my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
-#Do not change after this line unless you really knows what you're doing
+#Do not change after this line unless you really know what you're doing
 sub usage();
 sub deletesession($);
 sub rename_last_session($);
