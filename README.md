@@ -35,9 +35,11 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
    -b : Restore session X
 ```
 
+```
   example:  perl ovh-pca-api-manage.pl -d 86400 (=delete sessions older than a day)
             perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into new session name)
             perl ovh-pca-api-manage.pl -l (=List active sessions)
             perl ovh-pca-api-manage.pl -t (=List tasks and get their status)
             perl ovh-pca-api-manage.pl -b 51d542f302ee4c5466000000 (=Restore session with ID 51d542f302ee4c5466000000)
+```
             
