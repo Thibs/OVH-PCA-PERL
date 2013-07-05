@@ -25,7 +25,7 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
 ## Utilisation
 
 ```
-  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l]
+  usage: ovh-pca-api-manage.pl [-d] max_session_age_in_seconds | [-r] new_name | [-l]
 
    -h : this (help) message
    -d : delete PCA sessions older than X
@@ -33,8 +33,8 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
    -l : List PCA sessions
    -t : List tasks with their status
 
-  example: perl $0 -d 86400 (=delete sessions older than a day)
-            perl $0 -r "new session name" (=rename last session into new session name)
-            perl $0 -l (=List active sessions)
-            perl $0 -t (=List tasks and get their status)
+  example:  perl ovh-pca-api-manage.pl -d 86400 (=delete sessions older than a day)
+            perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into new session name)
+            perl ovh-pca-api-manage.pl -l (=List active sessions)
+            perl ovh-pca-api-manage.pl -t (=List tasks and get their status)
 ```
