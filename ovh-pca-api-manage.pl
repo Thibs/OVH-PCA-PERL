@@ -21,28 +21,37 @@ my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
 sub usage();
+sub error($);
 sub deletesession($);
 sub rename_last_session($);
 sub listsessions ($);
 sub tasksproperties ($);
+sub restoresession ($);
 
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
 my %opt=();
-getopts("d:r:lth",\%opt) or usage();
+getopts("d:r:b:lth",\%opt) or usage();
 usage() if $opt{h};
 my $pca_session_max_age = $opt{d};
 my $pca_session_newname = $opt{r};
 my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
+my $pca_sessions_torestore = $opt{b};
 
-if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))) {
+if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))) {
 	if (defined($pca_session_max_age)) {
 		if ($pca_session_max_age !~ /\d+/ ) {
 			$pca_session_max_age='86400'; # Exprimed in seconds ; 1 day is 86400 seconds
 		}
 		deletesession($pca_session_max_age);
+	}
+	if (defined($pca_sessions_torestore)) {
+		if ($pca_sessions_torestore !~ /.{24}/ ) {
+			error("$pca_sessions_torestore is not a valid session ID");
+		}
+		restoresession($pca_sessions_torestore);
 	}
 	if (defined($pca_session_newname)) {
 		rename_last_session($pca_session_newname);
@@ -60,7 +69,6 @@ else {
 exit(0);
 
 # Functions
-sub error($);
 sub GetOVHtimestamp();
 sub CallOVHapi($$$$;$);
 sub GetOVHSignature($$$$$;$);
@@ -70,15 +78,17 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l]
+  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l] | [-t] | [-b] Session ID | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -t : List tasks with their status
+   -b : Restore session X
 
   example:  perl $0 -d 86400 (=delete sessions older than a day)
+  	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
             perl $0 -r "new session name" (=rename last session into new session name)
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
@@ -102,7 +112,7 @@ sub rename_last_session($) {
 			my $last_session= pop(@$pca_sessions);
 			my $body="{\"name\":\"$pca_session_newname\"}";
 			CallOVHapi($as,$ck,'PUT',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$last_session",$body);
-			print "Session $last_session has been renamed into $pca_session_newname\n";
+			print "Request for renaming session $last_session into $pca_session_newname has been submitted\n";
 		}
 	}
 }
@@ -158,6 +168,18 @@ sub tasksproperties ($) {
 				my $pca_task_tododate=$pca_task_properties->{'todoDate'};
 				print "Task with ID $pca_task_id requesting task $pca_task_function is in status $pca_task_status (should be executed at $pca_task_tododate) \n";
 			}
+		}
+	}
+}
+
+sub restoresession ($) {
+	my $pca_session_torestore=$_[0];
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			CallOVHapi($as,$ck,'POST',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session_torestore/restore");
+			print "Request for restoring session $pca_session_torestore has been submitted\n";
 		}
 	}
 }
