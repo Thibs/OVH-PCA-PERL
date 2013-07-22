@@ -32,7 +32,7 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -t : List tasks with their status
-   -s : Total size of all sessions (=Total sessions size)
+   -s : Total size of all sessions 
    -b : Restore session X
 ```
 
@@ -41,6 +41,7 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
             perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into new session name)
             perl ovh-pca-api-manage.pl -l (=List active sessions)
             perl ovh-pca-api-manage.pl -t (=List tasks and get their status)
+            perl ovh-pca-api-manage.pl -s (=List total sessions size)
             perl ovh-pca-api-manage.pl -b 51d542f302ee4c5466000000 (=Restore session with ID 51d542f302ee4c5466000000)
 ```
             
