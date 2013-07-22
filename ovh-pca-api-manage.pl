@@ -12,11 +12,15 @@ use JSON qw( decode_json );
 use HTTP::Date;
 use Digest::SHA1 qw(sha1 sha1_hex);
 use Getopt::Std;
+use POSIX;
 
 #Change your settings here
-my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
-my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
-my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
+#my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
+#my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
+#my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
+my $as='IGX4Iin9iqy0hS9GYuby3TS5WTdDtm4w';
+my $ck='l8oTwTAfHUpRmmejJ6uJqK2xEBnBFEVa';
+my $ak='qNFLisqa658Jwh5V';
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
@@ -24,23 +28,25 @@ sub usage();
 sub error($);
 sub deletesession($);
 sub rename_last_session($);
-sub listsessions ($);
-sub tasksproperties ($);
+sub listsessions ();
+sub tasksproperties ();
 sub restoresession ($);
+sub sessionsize ();
 
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
 my %opt=();
-getopts("d:r:b:lth",\%opt) or usage();
+getopts("d:r:b:ltsh",\%opt) or usage();
 usage() if $opt{h};
 my $pca_session_max_age = $opt{d};
 my $pca_session_newname = $opt{r};
+my $pca_sessions_torestore = $opt{b};
 my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
-my $pca_sessions_torestore = $opt{b};
+my $pca_sessions_size = $opt{s};
 
-if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))) {
+if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))) {
 	if (defined($pca_session_max_age)) {
 		if ($pca_session_max_age !~ /\d+/ ) {
 			$pca_session_max_age='86400'; # Exprimed in seconds ; 1 day is 86400 seconds
@@ -62,6 +68,9 @@ if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($
 	if (defined($pca_tasks_list)) {
 		&tasksproperties();
 	}
+	if (defined($pca_sessions_size)) {
+		&sessionsize();
+	}
 }
 else {
 	usage();
@@ -78,12 +87,13 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l] | [-t] | [-b] Session ID | [-h]
+  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X
    -r : Rename last PCA session into Y
    -l : List PCA sessions
+   -s : Total sessions size
    -t : List tasks with their status
    -b : Restore session X
 
@@ -92,6 +102,7 @@ sub usage()
             perl $0 -r "new session name" (=rename last session into new session name)
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
+            perl $0 -s (=Total sessions size)
 
 EOF
   exit;
@@ -138,7 +149,7 @@ sub deletesession ($) {
 	}
 }
 
-sub listsessions ($) {
+sub listsessions () {
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
@@ -155,7 +166,7 @@ sub listsessions ($) {
 	}
 }
 
-sub tasksproperties ($) {
+sub tasksproperties () {
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
@@ -180,6 +191,20 @@ sub restoresession ($) {
 		foreach my $pca_service( @$available_pca_services ) {
 			CallOVHapi($as,$ck,'POST',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session_torestore/restore");
 			print "Request for restoring session $pca_session_torestore has been submitted\n";
+		}
+	}
+}
+
+sub sessionsize () {
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			my $pca_usage=CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/usage");
+			my $pca_usage_in_MB=ceil($pca_usage/1024);
+			my $pca_usage_in_GB=ceil($pca_usage_in_MB/1024);
+			my $pca_usage_in_TB=ceil($pca_usage_in_GB/1024);
+			print "Total usage is currently $pca_usage bytes (=$pca_usage_in_MB MB or $pca_usage_in_GB GB or $pca_usage_in_TB TB)\n";
 		}
 	}
 }
