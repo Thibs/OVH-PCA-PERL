@@ -15,12 +15,9 @@ use Getopt::Std;
 use POSIX;
 
 #Change your settings here
-#my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
-#my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
-#my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
-my $as='IGX4Iin9iqy0hS9GYuby3TS5WTdDtm4w';
-my $ck='l8oTwTAfHUpRmmejJ6uJqK2xEBnBFEVa';
-my $ak='qNFLisqa658Jwh5V';
+my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
+my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
+my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
