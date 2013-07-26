@@ -18,7 +18,8 @@ Si vous utilisez Debian, il vous faudra les packages suivants :
 libjson-perl
 libjson-xs-perl
 libdigest-sha1-perl
-libwww-perl 
+libwww-perl
+libcrypt-ssleay-perl
 
 Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS. Dans le répertoire package, vous trouverez une version adaptée à Ubuntu 12.04 (à installer avec la commande dpkg -i libdigest-sha1-perl.deb)
 
