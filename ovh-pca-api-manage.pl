@@ -21,37 +21,52 @@ my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
+# Define functions usage
 sub usage();
 sub error($);
-sub deletesession($);
+sub deletesession_time_based($);
+sub deletesession_id($);
 sub rename_last_session($);
 sub listsessions ();
 sub tasksproperties ();
 sub restoresession ($);
 sub sessionsize ();
+# Define internal functions
+sub GetOVHtimestamp();
+sub CallOVHapi($$$$;$);
+sub GetOVHSignature($$$$$;$);
 
+#Create web user agent (=pseudo browser)
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
+#Get parameters and call right function depending of it
 my %opt=();
 getopts("d:r:b:ltsh",\%opt) or usage();
 usage() if $opt{h};
-my $pca_session_max_age = $opt{d};
+my $pca_session_delete = $opt{d};
 my $pca_session_newname = $opt{r};
 my $pca_sessions_torestore = $opt{b};
 my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
 my $pca_sessions_size = $opt{s};
 
-if ((defined($pca_session_max_age))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))) {
-	if (defined($pca_session_max_age)) {
-		if ($pca_session_max_age !~ /\d+/ ) {
-			$pca_session_max_age='86400'; # Exprimed in seconds ; 1 day is 86400 seconds
+if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))) {
+	if (defined($pca_session_delete)) {
+		if ($pca_session_delete =~ /.{24}/ ) { #A session ID is considered as a 24 characters string
+			my $session_id_to_delete=$pca_session_delete;
+			deletesession_id($session_id_to_delete);
 		}
-		deletesession($pca_session_max_age);
+		elsif($pca_session_delete!~ /\D/ )  { # If it's not a session ID, it's perhaps an expiration time exprimed in seconds
+			my $pca_session_max_age=$pca_session_delete;
+			deletesession_time_based($pca_session_max_age);
+		}
+		else { #If it's not a number or a 24 characters string, it's an error
+			error("$pca_session_delete is not a valid session ID neither a number");
+		}
 	}
 	if (defined($pca_sessions_torestore)) {
-		if ($pca_sessions_torestore !~ /.{24}/ ) {
+		if ($pca_sessions_torestore !~ /.{24}/ ) { #A session ID is considered as a 24 characters string
 			error("$pca_sessions_torestore is not a valid session ID");
 		}
 		restoresession($pca_sessions_torestore);
@@ -74,20 +89,15 @@ else {
 }
 exit(0);
 
-# Functions
-sub GetOVHtimestamp();
-sub CallOVHapi($$$$;$);
-sub GetOVHSignature($$$$$;$);
-
 sub usage()
 {
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
+  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
 
    -h : this (help) message
-   -d : delete PCA sessions older than X
+   -d : delete PCA sessions older than X or PCA session ID
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -s : Total sessions size
@@ -95,6 +105,7 @@ sub usage()
    -b : Restore session X
 
   example:  perl $0 -d 86400 (=delete sessions older than a day)
+  	    perl $0 -d 51cbb78fb75806f22f000000 (delete session 51cbb78fb75806f22f000000)
   	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
             perl $0 -r "new session name" (=rename last session into new session name)
             perl $0 -l (=List active sessions)
@@ -125,8 +136,9 @@ sub rename_last_session($) {
 	}
 }
 
-sub deletesession ($) {
+sub deletesession_time_based ($) {
 	my $timestamp = time;
+	my $pca_session_max_age=$_[0];
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
@@ -142,6 +154,19 @@ sub deletesession ($) {
 					print "Files from session $pca_session of PCA service $pca_service from OVH cloud service $cloud_service will be deleted at $deletion_date\n";
 				}
 			}
+		}
+	}
+}
+
+sub deletesession_id($) {
+	my $session_id_to_delete=$_[0];
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			my $delete_files_instruction=decode_json(CallOVHapi($as,$ck,'DELETE',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$session_id_to_delete"));
+			my $deletion_date=$delete_files_instruction->{todoDate};
+			print "Files from session $session_id_to_delete of PCA service $pca_service from OVH cloud service $cloud_service will be deleted at $deletion_date\n";
 		}
 	}
 }
