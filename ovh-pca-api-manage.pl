@@ -4,6 +4,8 @@
 # General Public License or the Artistic License
 # http://www.opensource.org/licenses/artistic-license-2.0.php
 # http://www.gnu.org/licenses/gpl-3.0.txt
+#
+# V.0.1 - Last updated 28th of July 2013
 
 use warnings;
 use strict;
@@ -15,9 +17,9 @@ use Getopt::Std;
 use POSIX;
 
 #Change your settings here
-my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
-my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
-my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
+#my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
+#my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
+#my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
@@ -39,6 +41,11 @@ sub GetOVHSignature($$$$$;$);
 #Create web user agent (=pseudo browser)
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
+
+#Get time diffeence between OVH and us
+my $ovhtimestamp=GetOVHtimestamp();
+my $localtimestamp = time;
+my $timestampdifference=$ovhtimestamp-$localtimestamp;
 
 #Get parameters and call right function depending of it
 my %opt=();
@@ -265,12 +272,22 @@ sub CallOVHapi($$$$;$) {
 }
 
 sub GetOVHtimestamp() {
-	my $timestamp = time; #Fall back to local time if OVH is not answering
-	# Get OVH timestamp
-	my $req = HTTP::Request->new(GET => 'https://api.ovh.com/1.0/auth/time');
-	my $res = $ua->request($req);
-	if ($res->is_success) {
-		$timestamp=$res->content;
+	my $timestamp = time;
+	if (defined($timestampdifference)) { #We already knows the time difference between OVH and us
+		if ($timestampdifference > 0) {
+			$timestamp=$timestamp-$timestampdifference;
+		}
+		elsif ($timestampdifference < 0) {
+			$timestamp=$timestamp+abs($timestampdifference);
+		}
+	}
+	else {
+		# Get OVH timestamp
+		my $req = HTTP::Request->new(GET => 'https://api.ovh.com/1.0/auth/time');
+		my $res = $ua->request($req); 
+		if ($res->is_success) { # If no answer, it will fall back to localtime
+			$timestamp=$res->content;
+		}
 	}
 	return $timestamp;
 }
