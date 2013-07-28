@@ -188,8 +188,9 @@ sub listsessions () {
 				my $pca_session_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session"));
 				my $session_end_date=$pca_session_properties->{'endDate'};
 				my $session_name=$pca_session_properties->{'name'};
-				my $sesssion_size=$pca_session_properties->{'size'};
-				print "Session $pca_session named $session_name ended on $session_end_date has a size of $sesssion_size\n";
+				my $session_size=$pca_session_properties->{'size'};
+				my $session_state=$pca_session_properties->{'state'};
+				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size and is in state $session_state\n";
 			}
 		}
 	}
