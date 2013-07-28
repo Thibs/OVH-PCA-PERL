@@ -104,7 +104,7 @@ sub usage()
   usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
 
    -h : this (help) message
-   -d : delete PCA sessions older than X or PCA session ID
+   -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -s : Total sessions size
@@ -190,7 +190,7 @@ sub listsessions () {
 				my $session_name=$pca_session_properties->{'name'};
 				my $session_size=$pca_session_properties->{'size'};
 				my $session_state=$pca_session_properties->{'state'};
-				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size and is in state $session_state\n";
+				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size bytes and is in state $session_state\n";
 			}
 		}
 	}
