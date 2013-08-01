@@ -26,10 +26,11 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
 ## Utilisation
 
 ```
-  usage: ovh-pca-api-manage.pl [-d] max_session_age_in_seconds | [-d] session ID | [-r] new_name | [-l] | [-s] | [-t] | [-b] Session ID | [-h]
+  usage: ovh-pca-api-manage.pl [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
+   -f : List files from PCA session ID
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -t : List tasks with their status
@@ -41,6 +42,7 @@ Le package libdigest-sha1-perl n'existe étrangement plus sous Ubuntu 12.04 LTS.
   example:  perl ovh-pca-api-manage.pl -d 86400 (=delete sessions older than a day)
             perl ovh-pca-api-manage.pl -d 51d542f302ee4c5466000000 (=Delete session with ID 51d542f302ee4c5466000000)
             perl ovh-pca-api-manage.pl -b 51d542f302ee4c5466000000 (=Restore session with ID 51d542f302ee4c5466000000)
+            perl ovh-pca-api-manage.pl -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
             perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into new session name)
             perl ovh-pca-api-manage.pl -l (=List active sessions)
             perl ovh-pca-api-manage.pl -t (=List tasks and get their status)

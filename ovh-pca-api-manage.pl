@@ -5,7 +5,7 @@
 # http://www.opensource.org/licenses/artistic-license-2.0.php
 # http://www.gnu.org/licenses/gpl-3.0.txt
 #
-# V.0.1 - Last updated 28th of July 2013
+# V.0.2 - Last updated 1st of Augustus 2013
 
 use warnings;
 use strict;
@@ -17,9 +17,9 @@ use Getopt::Std;
 use POSIX;
 
 #Change your settings here
-#my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
-#my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
-#my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
+my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
+my $ck='YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'; #Put here your consumer key
+my $ak='ZZZZZZZZZZZZZZZZ'; # Put here your application key
 my $api_base_url='https://api.ovh.com/1.0/cloud';
 
 #Do not change after this line unless you really know what you're doing
@@ -32,6 +32,7 @@ sub rename_last_session($);
 sub listsessions ();
 sub tasksproperties ();
 sub restoresession ($);
+sub listfilesession ($);
 sub sessionsize ();
 # Define internal functions
 sub GetOVHtimestamp();
@@ -49,16 +50,17 @@ my $timestampdifference=$ovhtimestamp-$localtimestamp;
 
 #Get parameters and call right function depending of it
 my %opt=();
-getopts("d:r:b:ltsh",\%opt) or usage();
+getopts("d:r:b:f:ltsh",\%opt) or usage();
 usage() if $opt{h};
 my $pca_session_delete = $opt{d};
 my $pca_session_newname = $opt{r};
 my $pca_sessions_torestore = $opt{b};
+my $pca_sessions_filelist = $opt{f};
 my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
 my $pca_sessions_size = $opt{s};
 
-if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))) {
+if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))||(defined($pca_sessions_filelist))) {
 	if (defined($pca_session_delete)) {
 		if ($pca_session_delete =~ /.{24}/ ) { #A session ID is considered as a 24 characters string
 			my $session_id_to_delete=$pca_session_delete;
@@ -77,6 +79,12 @@ if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($p
 			error("$pca_sessions_torestore is not a valid session ID");
 		}
 		restoresession($pca_sessions_torestore);
+	}
+	if (defined($pca_sessions_filelist)) {
+		if ($pca_sessions_filelist !~ /.{24}/ ) { #A session ID is considered as a 24 characters string
+			error("$pca_sessions_filelist is not a valid session ID");
+		}
+		listfilesession($pca_sessions_filelist);
 	}
 	if (defined($pca_session_newname)) {
 		rename_last_session($pca_session_newname);
@@ -101,10 +109,11 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
+  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
+   -f : List files from PCA session ID 
    -r : Rename last PCA session into Y
    -l : List PCA sessions
    -s : Total sessions size
@@ -114,6 +123,7 @@ sub usage()
   example:  perl $0 -d 86400 (=delete sessions older than a day)
   	    perl $0 -d 51cbb78fb75806f22f000000 (delete session 51cbb78fb75806f22f000000)
   	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
+  	    perl $0 -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
             perl $0 -r "new session name" (=rename last session into new session name)
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
@@ -174,6 +184,26 @@ sub deletesession_id($) {
 			my $delete_files_instruction=decode_json(CallOVHapi($as,$ck,'DELETE',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$session_id_to_delete"));
 			my $deletion_date=$delete_files_instruction->{todoDate};
 			print "Files from session $session_id_to_delete of PCA service $pca_service from OVH cloud service $cloud_service will be deleted at $deletion_date\n";
+		}
+	}
+}
+
+sub listfilesession ($) {
+	my $session_id_to_list=$_[0];
+	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
+	foreach my $cloud_service( @$available_cloud_services ) { 
+		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
+		foreach my $pca_service( @$available_pca_services ) {
+			my $pca_sessions_fileslist=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$session_id_to_list/files"));
+			print "PCA session $session_id_to_list is containing following files :\n";
+			foreach my $file_in_session( @$pca_sessions_fileslist ) {
+				my $file_in_session_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$session_id_to_list/files/$file_in_session"));
+				my $file_name=$file_in_session_properties->{'name'};
+				my $file_state=$file_in_session_properties->{'state'};
+				my $file_size=$file_in_session_properties->{'size'};
+				my $file_type=$file_in_session_properties->{'type'};
+				print "$file_name\tID=$file_in_session\tSize=$file_size\tType=$file_type\tState=$file_state\n";
+			}
 		}
 	}
 }
