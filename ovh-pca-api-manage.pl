@@ -43,7 +43,7 @@ sub GetOVHSignature($$$$$;$);
 my $ua = LWP::UserAgent->new;
 $ua->agent("Thibs-OVH-API/0.1 ");
 
-#Get time diffeence between OVH and us
+#Get time difference between OVH and us
 my $ovhtimestamp=GetOVHtimestamp();
 my $localtimestamp = time;
 my $timestampdifference=$ovhtimestamp-$localtimestamp;
@@ -124,7 +124,7 @@ sub usage()
   	    perl $0 -d 51cbb78fb75806f22f000000 (delete session 51cbb78fb75806f22f000000)
   	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
   	    perl $0 -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
-            perl $0 -r "new session name" (=rename last session into new session name)
+            perl $0 -r "new session name" (=rename last session into "new session name")
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
             perl $0 -s (=Total sessions size)
