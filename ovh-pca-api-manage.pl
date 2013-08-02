@@ -264,7 +264,7 @@ sub sessionsize () {
 			my $pca_usage_in_KB=ceil($pca_usage/1024);
 			my $pca_usage_in_MB=ceil($pca_usage_in_KB/1024);
 			my $pca_usage_in_GB=ceil($pca_usage_in_MB/1024);
-			my $pca_usage_in_TB=ceil($pca_usage_in_GB/1024);
+			my $pca_usage_in_TB=$pca_usage_in_GB/1024;
 			print "Total usage is currently $pca_usage bytes (=$pca_usage_in_MB MB or $pca_usage_in_GB GB or $pca_usage_in_TB TB)\n";
 		}
 	}
