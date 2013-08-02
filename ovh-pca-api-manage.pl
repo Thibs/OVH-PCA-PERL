@@ -109,7 +109,7 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
+  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-b] Session ID | [-r] new_name | [-l] | [-t] | [-s] | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
@@ -122,8 +122,8 @@ sub usage()
 
   example:  perl $0 -d 86400 (=delete sessions older than a day)
   	    perl $0 -d 51cbb78fb75806f22f000000 (delete session 51cbb78fb75806f22f000000)
-  	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
   	    perl $0 -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
+  	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
             perl $0 -r "new session name" (=rename last session into "new session name")
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
@@ -218,9 +218,9 @@ sub listsessions () {
 				my $pca_session_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session"));
 				my $session_end_date=$pca_session_properties->{'endDate'};
 				my $session_name=$pca_session_properties->{'name'};
-				my $session_size=$pca_session_properties->{'size'};
+				my $session_size=ceil($pca_session_properties->{'size'}/1073741824);
 				my $session_state=$pca_session_properties->{'state'};
-				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size bytes and is in state $session_state\n";
+				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size GB and is in state $session_state\n";
 			}
 		}
 	}
@@ -261,7 +261,8 @@ sub sessionsize () {
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
 		foreach my $pca_service( @$available_pca_services ) {
 			my $pca_usage=CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/usage");
-			my $pca_usage_in_MB=ceil($pca_usage/1024);
+			my $pca_usage_in_KB=ceil($pca_usage/1024);
+			my $pca_usage_in_MB=ceil($pca_usage_in_KB/1024);
 			my $pca_usage_in_GB=ceil($pca_usage_in_MB/1024);
 			my $pca_usage_in_TB=ceil($pca_usage_in_GB/1024);
 			print "Total usage is currently $pca_usage bytes (=$pca_usage_in_MB MB or $pca_usage_in_GB GB or $pca_usage_in_TB TB)\n";
