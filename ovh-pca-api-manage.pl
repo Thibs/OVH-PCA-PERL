@@ -5,7 +5,7 @@
 # http://www.opensource.org/licenses/artistic-license-2.0.php
 # http://www.gnu.org/licenses/gpl-3.0.txt
 #
-# V.0.2 - Last updated 1st of Augustus 2013
+# V.0.2 - Last updated 3th of Augustus 2013
 
 use warnings;
 use strict;
@@ -14,7 +14,6 @@ use JSON qw( decode_json );
 use HTTP::Date;
 use Digest::SHA1 qw(sha1 sha1_hex);
 use Getopt::Std;
-use POSIX;
 
 #Change your settings here
 my $as='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; #Put here your  application secret
@@ -218,7 +217,7 @@ sub listsessions () {
 				my $pca_session_properties=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$pca_session"));
 				my $session_end_date=$pca_session_properties->{'endDate'};
 				my $session_name=$pca_session_properties->{'name'};
-				my $session_size=ceil($pca_session_properties->{'size'}/1073741824);
+				my $session_size=sprintf "%.2f",$pca_session_properties->{'size'}/1073741824;
 				my $session_state=$pca_session_properties->{'state'};
 				print "Session $pca_session named $session_name ended on $session_end_date has a size of $session_size GB and is in state $session_state\n";
 			}
@@ -261,10 +260,10 @@ sub sessionsize () {
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
 		foreach my $pca_service( @$available_pca_services ) {
 			my $pca_usage=CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/usage");
-			my $pca_usage_in_KB=ceil($pca_usage/1024);
-			my $pca_usage_in_MB=ceil($pca_usage_in_KB/1024);
-			my $pca_usage_in_GB=ceil($pca_usage_in_MB/1024);
-			my $pca_usage_in_TB=$pca_usage_in_GB/1024;
+			my $pca_usage_in_KB=sprintf "%.0f",$pca_usage/1024;
+			my $pca_usage_in_MB=sprintf "%.0f",$pca_usage_in_KB/1024;
+			my $pca_usage_in_GB=sprintf "%.1f",$pca_usage_in_MB/1024;
+			my $pca_usage_in_TB=sprintf "%.2f", $pca_usage_in_GB/1024;
 			print "Total usage is currently $pca_usage bytes (=$pca_usage_in_MB MB or $pca_usage_in_GB GB or $pca_usage_in_TB TB)\n";
 		}
 	}
