@@ -47,7 +47,7 @@ my $ovhtimestamp=GetOVHtimestamp();
 my $localtimestamp = time;
 my $timestampdifference=$ovhtimestamp-$localtimestamp;
 
-#Get parameters and call right function depending of it
+#Get parameters from command line
 my %opt=();
 getopts("d:r:b:f:ltsh",\%opt) or usage();
 usage() if $opt{h};
@@ -59,6 +59,7 @@ my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
 my $pca_sessions_size = $opt{s};
 
+#Call right function depending on parameters
 if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))||(defined($pca_sessions_filelist))) {
 	if (defined($pca_session_delete)) {
 		if ($pca_session_delete =~ /.{24}/ ) { #A session ID is considered as a 24 characters string
