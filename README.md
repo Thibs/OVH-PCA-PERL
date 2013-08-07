@@ -21,7 +21,7 @@ libdigest-sha1-perl
 libwww-perl
 libcrypt-ssleay-perl
 
-Le package libdigest-sha1-perl n'existe étrangement plus ni sous Debian 7 Wheezy, nisous Ubuntu 12.04 LTS.
+Le package libdigest-sha1-perl n'existe étrangement plus ni sous Debian 7 Wheezy, ni sous Ubuntu 12.04 LTS.
 
 Dans le répertoire package-ubuntu, vous trouverez une version adaptée à Ubuntu 12.04
 
@@ -30,8 +30,6 @@ Dans le répertoire packages-debian7-wheezy, vous trouverez une version adaptée
 Un fois le package téléchargé sur votre système, installez le à l'aide de la commande dpkg -i libdigest-sha1-perl_2.13-1_amd64.deb
 
 Sous Debian 7.0 (Wheezy), le package libdigest-sha1-perl n'existe plus non plus
-
-use Digest::SHA qw(sha1 sha1_hex);
 
 ## Utilisation
 
