@@ -29,6 +29,14 @@ Dans le répertoire packages-debian7-wheezy, vous trouverez une version adaptée
 
 Un fois le package téléchargé sur votre système, installez le à l'aide de la commande dpkg -i libdigest-sha1-perl_2.13-1_amd64.deb
 
+Même si le script gère la différence d'heure entre votre machine et les serveurs d'OVH, je vous recommande quand même d'ajouter en cron une synchroniosation d'heure avec OVH.
+
+Par exemple ainsi :
+
+20 01 * * * ntpdate -s ntp.ovh.net
+
+(synchronisation silencieuse avec les serveurs d'OVH à 01h20)
+
 ## Utilisation
 
 ```
