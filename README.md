@@ -29,8 +29,6 @@ Dans le répertoire packages-debian7-wheezy, vous trouverez une version adaptée
 
 Un fois le package téléchargé sur votre système, installez le à l'aide de la commande dpkg -i libdigest-sha1-perl_2.13-1_amd64.deb
 
-Sous Debian 7.0 (Wheezy), le package libdigest-sha1-perl n'existe plus non plus
-
 ## Utilisation
 
 ```

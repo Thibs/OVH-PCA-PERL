@@ -310,7 +310,7 @@ sub GetOVHtimestamp() {
 			$timestamp=$timestamp-$timestampdifference;
 		}
 		elsif ($timestampdifference < 0) {
-			$timestamp=$timestamp+abs($timestampdifference);
+			$timestamp=$timestamp-abs($timestampdifference);
 		}
 	}
 	else {
