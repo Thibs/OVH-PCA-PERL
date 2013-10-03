@@ -40,12 +40,13 @@ Par exemple ainsi :
 ## Utilisation
 
 ```
-  usage: ovh-pca-api-manage.pl [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-r] new_name | [-l] | [-t] | [-s] | [-b] Session ID | [-h]
+  usage: perl ovh-pca-api-manage.pl [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-b] Session ID | [-r] new_name | [-r] "Session ID new_name" | [-l] | [-t] | [-s] | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
    -f : List files from PCA session ID
    -r : Rename last PCA session into Y
+   -r : Rename PCA session ID into Z
    -l : List PCA sessions
    -t : List tasks with their status
    -s : Total size of all sessions 
@@ -57,7 +58,8 @@ Par exemple ainsi :
             perl ovh-pca-api-manage.pl -d 51d542f302ee4c5466000000 (=Delete session with ID 51d542f302ee4c5466000000)
             perl ovh-pca-api-manage.pl -b 51d542f302ee4c5466000000 (=Restore session with ID 51d542f302ee4c5466000000)
             perl ovh-pca-api-manage.pl -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
-            perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into new session name)
+            perl ovh-pca-api-manage.pl -r "new session name" (=rename last session into "new session name")
+  	    perl ovh-pca-api-manage.pl -r "51cbb78fb75806f22f000000 new session name" (=rename session 51cbb78fb75806f22f000000 into "new session name")
             perl ovh-pca-api-manage.pl -l (=List active sessions)
             perl ovh-pca-api-manage.pl -t (=List tasks and get their status)
             perl ovh-pca-api-manage.pl -s (=List total sessions size)

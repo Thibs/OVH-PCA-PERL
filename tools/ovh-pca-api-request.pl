@@ -2,7 +2,7 @@
 #use strict;
 use LWP;
 
-$myAppKey = "XXXXXXXXXXXXXXXXXXX";
+my $myAppKey = "XXXXXXXXXXXXXXXXXXX";
 my $browser = LWP::UserAgent->new;
 my $url = 'https://api.ovh.com/1.0/auth/credential';
 
@@ -11,7 +11,7 @@ my $response = $browser->post(
 	$url,
   	'Content-type' => 'application/json',
   	'X-Ovh-Application' => $myAppKey,
-  	'{"accessRules":[{"method":"GET","path":"/*"},{"method":"POST","path":"/*"},{"method":"PUT","path":"/*"},{"method":"DELETE","path":"/*"}]}'
+  	'{ "accessRules": [ { "method": "GET", "path": "/*" }, {"method":"POST","path":"/*"}, {"method":"PUT","path":"/*"}, {"method":"DELETE","path":"/*"} ] }'
 );
 print $response;
 

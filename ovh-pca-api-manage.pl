@@ -5,7 +5,7 @@
 # http://www.opensource.org/licenses/artistic-license-2.0.php
 # http://www.gnu.org/licenses/gpl-3.0.txt
 #
-# V.0.2 - Last updated 3th of Augustus 2013
+# V.0.9 - Last updated 3rd of October 2013
 
 use warnings;
 use strict;
@@ -27,7 +27,7 @@ sub usage();
 sub error($);
 sub deletesession_time_based($);
 sub deletesession_id($);
-sub rename_last_session($);
+sub rename_session($;$);
 sub listsessions ();
 sub tasksproperties ();
 sub restoresession ($);
@@ -37,6 +37,7 @@ sub sessionsize ();
 sub GetOVHtimestamp();
 sub CallOVHapi($$$$;$);
 sub GetOVHSignature($$$$$;$);
+sub trim($);
 
 #Create web user agent (=pseudo browser)
 my $ua = LWP::UserAgent->new;
@@ -47,7 +48,7 @@ my $ovhtimestamp=GetOVHtimestamp();
 my $localtimestamp = time;
 my $timestampdifference=$ovhtimestamp-$localtimestamp;
 
-#Get parameters from command line
+#Get parameters and call right function depending of it
 my %opt=();
 getopts("d:r:b:f:ltsh",\%opt) or usage();
 usage() if $opt{h};
@@ -59,7 +60,6 @@ my $pca_sessions_list = $opt{l};
 my $pca_tasks_list = $opt{t};
 my $pca_sessions_size = $opt{s};
 
-#Call right function depending on parameters
 if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($pca_sessions_list))||(defined($pca_tasks_list))||(defined($pca_sessions_torestore))||(defined($pca_sessions_size))||(defined($pca_sessions_filelist))) {
 	if (defined($pca_session_delete)) {
 		if ($pca_session_delete =~ /.{24}/ ) { #A session ID is considered as a 24 characters string
@@ -87,7 +87,15 @@ if ((defined($pca_session_delete))||(defined($pca_session_newname))||(defined($p
 		listfilesession($pca_sessions_filelist);
 	}
 	if (defined($pca_session_newname)) {
-		rename_last_session($pca_session_newname);
+		my @newnamesplit = split(/\s+/,$pca_session_newname);
+		if ($newnamesplit[0] =~ /.{24}/ ) { #If the first part of -r parameter is a 24 characters string, it's considered as a session ID
+			my $sessiontorename=$newnamesplit[0];
+			$pca_session_newname=trim(substr $pca_session_newname, 24);
+			rename_session($pca_session_newname,$sessiontorename);
+		}
+		else { #Everything behind the -r parameter is the new name for the last session
+			rename_session($pca_session_newname);
+		}
 	}
 	if (defined($pca_sessions_list)) {
 		&listsessions();
@@ -109,12 +117,13 @@ sub usage()
   print STDERR << "EOF";
   Multi purpose command line utility on OVH PCA api 
 
-  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-b] Session ID | [-r] new_name | [-l] | [-t] | [-s] | [-h]
+  usage: $0 [-d] max_session_age_in_seconds | [-d] session ID | [-f] session ID | [-b] Session ID | [-r] new_name | [-r] "Session ID new_name" | [-l] | [-t] | [-s] | [-h]
 
    -h : this (help) message
    -d : delete PCA sessions older than X (exprimed in seconds) or PCA session ID
    -f : List files from PCA session ID 
    -r : Rename last PCA session into Y
+   -r : Rename PCA session ID into Z
    -l : List PCA sessions
    -s : Total sessions size
    -t : List tasks with their status
@@ -125,6 +134,7 @@ sub usage()
   	    perl $0 -f 51cbb78fb75806f22f000000 (list files contained in session 51cbb78fb75806f22f000000)
   	    perl $0 -b 51cbb78fb75806f22f000000 (restore session 51cbb78fb75806f22f000000)
             perl $0 -r "new session name" (=rename last session into "new session name")
+  	    perl $0 -r "51cbb78fb75806f22f000000 new session name" (=rename session 51cbb78fb75806f22f000000 into "new session name")
             perl $0 -l (=List active sessions)
             perl $0 -t (=List tasks and get their status)
             perl $0 -s (=Total sessions size)
@@ -138,17 +148,23 @@ sub error($) {
   exit(1);
 }
 
-sub rename_last_session($) {
+sub rename_session($;$) {
 	my $pca_session_newname=$_[0];
+	my $body="{\"name\":\"$pca_session_newname\"}";
+	my $session_id_to_rename='';
+	if (defined ($_[1])) {
+		$session_id_to_rename=$_[1];
+	}	
 	my $available_cloud_services=decode_json(CallOVHapi($as,$ck,'GET',$api_base_url));
 	foreach my $cloud_service( @$available_cloud_services ) { 
 		my $available_pca_services=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca"));
 		foreach my $pca_service( @$available_pca_services ) {
-			my $pca_sessions=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions"));
-			my $last_session= pop(@$pca_sessions);
-			my $body="{\"name\":\"$pca_session_newname\"}";
-			CallOVHapi($as,$ck,'PUT',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$last_session",$body);
-			print "Request for renaming session $last_session into $pca_session_newname has been submitted\n";
+			unless (defined ($_[1])) {
+				my $pca_sessions=decode_json(CallOVHapi($as,$ck,'GET',"$api_base_url/$cloud_service/pca/$pca_service/sessions"));
+				$session_id_to_rename=pop(@$pca_sessions);
+			}
+			CallOVHapi($as,$ck,'PUT',"$api_base_url/$cloud_service/pca/$pca_service/sessions/$session_id_to_rename",$body);
+			print "Request for renaming session $session_id_to_rename into $pca_session_newname has been submitted\n";
 		}
 	}
 }
@@ -340,4 +356,11 @@ sub GetOVHSignature($$$$$;$) {
 	my $digest = sha1_hex($signaturepresha1);
 	my $signature = '$1$'.$digest;
 	return $signature;
+}
+
+sub trim($) {
+	my $string = shift;
+	$string =~ s/^\s+//;
+	$string =~ s/\s+$//;
+	return $string;
 }
