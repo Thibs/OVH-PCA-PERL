@@ -8,9 +8,45 @@ Pour que ce script soit fonctionnel il faut :
 
 3° Mettre dans le script dans $as votre clé (secrète) d'application
 
-4° Demander un Token d'authentification à OVH ; il y a un exemple sur il y a un exemple sur http://www.ovh.com/fr/g934.premiers-pas-avec-l-api (attention dans l'exemple le token n'a que les droits GET)
+4° Demander un Token d'authentification à OVH en procédant ainsi (XXXXXXXXXXXXXXXX est votré clé publique d'application) :
 
-5° Mettre ce token dans le script dans $ck
+a)
+curl -XPOST -H"X-Ovh-Application: XXXXXXXXXXXXXXXX" -H "Content-type: application/json" \
+https://eu.api.ovh.com/1.0/auth/credential  -d '{
+    "accessRules": [
+        {
+            "method": "GET",
+            "path": "/*"
+        },
+        {
+            "method": "POST",
+            "path": "/*"
+        },
+        {
+            "method": "PUT",
+            "path": "/*"
+        },
+        {
+            "method": "DELETE",
+            "path": "/*"
+        }
+    ],
+    "redirection":"https://api.ovh.com/"
+}'
+
+b) Vous revevez une réponse ressemblant à 
+
+{"validationUrl":"https://api.ovh.com/auth/?credentialToken=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy","consumerKey":"CONSUMERKEY","state":"pendingValidation"}
+
+Prenez note de la consumerKey
+
+c)
+
+Rendez vous à l'URL https://api.ovh.com/auth/?credentialToken=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy pour valider la demande et indiquez le temps de validité souhaité (illimité).
+
+Il y a un autre exemple sur http://www.ovh.com/fr/g934.premiers-pas-avec-l-api (attention dans cet autre exemple le token n'a que les droits GET)
+
+5° Mettre ce token/consumerKey dans le script dans la variable $ck
 
 
 Si vous utilisez Debian, il vous faudra les packages suivants :
