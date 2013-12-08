@@ -11,6 +11,7 @@ Pour que ce script soit fonctionnel il faut :
 4° Demander un Token d'authentification à OVH en procédant ainsi (XXXXXXXXXXXXXXXX est votré clé publique d'application) :
 
 a)
+```
 curl -XPOST -H"X-Ovh-Application: XXXXXXXXXXXXXXXX" -H "Content-type: application/json" \
 https://eu.api.ovh.com/1.0/auth/credential  -d '{
     "accessRules": [
@@ -33,10 +34,12 @@ https://eu.api.ovh.com/1.0/auth/credential  -d '{
     ],
     "redirection":"https://api.ovh.com/"
 }'
+```
 
 b) Vous revevez une réponse ressemblant à 
-
+```
 {"validationUrl":"https://api.ovh.com/auth/?credentialToken=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy","consumerKey":"CONSUMERKEY","state":"pendingValidation"}
+```
 
 Prenez note de la consumerKey
 
