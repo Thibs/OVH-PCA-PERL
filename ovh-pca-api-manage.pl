@@ -12,7 +12,7 @@ use strict;
 use LWP::UserAgent;
 use JSON qw( decode_json );
 use HTTP::Date;
-use Digest::SHA1 qw(sha1 sha1_hex);
+use Digest::SHA qw(sha1 sha1_hex);
 use Getopt::Std;
 
 #Change your settings here
@@ -353,8 +353,8 @@ sub GetOVHSignature($$$$$;$) {
 	}
 	#Create OVH Signature
 	# Format : AS+"+"+CK+"+"+METHOD+"+"+QUERY+"+"+BODY+"+"+TSTAMP
-	my $signaturepresha1=$as.'+'.$ck.'+'.$method.'+'.$apiurl.'+'.$body.'+'.$timestamp;
-	my $digest = sha1_hex($signaturepresha1);
+	my $signaturepresha=$as.'+'.$ck.'+'.$method.'+'.$apiurl.'+'.$body.'+'.$timestamp;
+	my $digest = sha_hex($signaturepresha);
 	my $signature = '$1$'.$digest;
 	return $signature;
 }
