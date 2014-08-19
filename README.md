@@ -56,7 +56,7 @@ Si vous utilisez Debian, il vous faudra les packages suivants :
 
 libjson-perl
 libjson-xs-perl
-libdigest-sha1-perl
+libdigest-sha-perl
 libwww-perl
 libcrypt-ssleay-perl
 
