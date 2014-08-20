@@ -52,7 +52,7 @@ Il y a un autre exemple sur http://www.ovh.com/fr/g934.premiers-pas-avec-l-api (
 5° Mettre ce token/consumerKey dans le script dans la variable $ck
 
 
-Si vous utilisez Debian, il vous faudra les packages suivants :
+Si vous utilisez Debian 7/Ubuntu 14.04, il vous faudra les packages suivants :
 
 libjson-perl
 libjson-xs-perl
