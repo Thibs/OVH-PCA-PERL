@@ -6,6 +6,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 #
 # V.0.9 - Last updated 3rd of October 2013
+# v.0.91 - Modification tu use sha instead of sha1
 
 use warnings;
 use strict;
