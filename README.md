@@ -60,14 +60,6 @@ libdigest-sha-perl
 libwww-perl
 libcrypt-ssleay-perl
 
-Le package libdigest-sha1-perl n'existe étrangement plus ni sous Debian 7 Wheezy, ni sous Ubuntu 12.04 LTS.
-
-Dans le répertoire package-ubuntu, vous trouverez une version adaptée à Ubuntu 12.04
-
-Dans le répertoire packages-debian7-wheezy, vous trouverez une version adaptée à Debian 7
-
-Un fois le package téléchargé sur votre système, installez le à l'aide de la commande dpkg -i libdigest-sha1-perl_2.13-1_amd64.deb
-
 Même si le script gère la différence d'heure entre votre machine et les serveurs d'OVH, je vous recommande quand même d'ajouter en cron une synchroniosation d'heure avec OVH.
 
 Par exemple ainsi :
